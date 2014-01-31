@@ -4,11 +4,12 @@ import urllib.request
 import hashlib
 import pickle
 import smtplib
+from email.mime.text import MIMEText
+from config import Settings
 
 
 def main():
-    page_url = "http://www.google.com"
-    with urllib.request.urlopen(page_url) as url:
+    with urllib.request.urlopen(Settings.url) as url:
         s = url.read()
     h = hashlib.sha256(s).hexdigest()
     print(h)
@@ -22,7 +23,7 @@ def main():
             print("different, emailing and dumping new hash")
             f.seek(0)
             pickle.dump(h, f)
-            send_mail(page_url)
+            send_mail(Settings.url)
     except IOError:
         f = open("hash", "wb+")
         print("file didn't exist, dumping hash")
@@ -31,18 +32,23 @@ def main():
 
 
 def send_mail(url):
-    server = "mail.server.com"
-    user = "username"
-    password = "super_strong_password"
+    message = MIMEText("The webpage %s has changed since last checked" % url)
 
-    recipients = ["me@email.com"]
-    sender = "script@email.com"
-    message = "The webpage " + url + " has changed since last checked"
+    server = Settings.mail_server
+    user = Settings.mail_user
+    password = Settings.mail_password
+
+    recipient = Settings.recipient
+    sender = Settings.mail_sender
+    message['Subject'] = "WebsiteWatcher Alert"
+    message['From'] = sender
+    message['To'] = recipient
 
     session = smtplib.SMTP(server)
     session.login(user, password)
-    session.sendmail(sender, recipients, message)
+    session.sendmail(sender, [recipient], message.as_string())
 
+    session.quit()
 
 if __name__ == "__main__":
     main()
