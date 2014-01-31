@@ -1,6 +1,8 @@
 __author__ = 'Daniel Dreier'
 
 ## Configuration class
+# Example cron entry, every 12 hours on the first minute of the hour:
+# 0 */12 * * * python3 /path/to/watcher.py
 
 class Settings:
     # URL to check for changes
